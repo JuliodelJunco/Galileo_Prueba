@@ -1,3 +1,14 @@
+export type Priority =
+| "low"
+| "medium"
+| "high"
+| "critical";
+
+export type Status =
+| "open"
+| "in_progress"
+| "resolved";
+
 export type Company = {
   id: string;
   name: string;

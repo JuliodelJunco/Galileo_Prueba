@@ -9,11 +9,6 @@ export default auth((req) => {
 
   const pathname = req.nextUrl.pathname;
 
-  if (!isLoggedIn) {
-    return Response.redirect(
-      new URL("/login", req.nextUrl)
-    );
-  }
 
   if (
     pathname.startsWith("/dashboard") &&

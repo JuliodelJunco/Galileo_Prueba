@@ -25,6 +25,7 @@ export default function LoginForm() {
             <input
             id="email"
             type="email"
+            name="email"
             placeholder="usuario@empresa.com"
             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition focus:border-blue-500/50 focus:bg-white/10"
             required
@@ -42,6 +43,7 @@ export default function LoginForm() {
             <input
             id="password"
             type="password"
+            name="password"
             placeholder="••••••••"
             className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-zinc-500 outline-none transition focus:border-blue-500/50 focus:bg-white/10"
             />

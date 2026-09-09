@@ -1,52 +1,59 @@
-"use client";
 import Link from "next/link";
-import { useState } from "react";
 import {
 Plus,
 MessageCircle,
 AlertCircle,
 Clock3,
 } from "lucide-react";
-const initialTickets = [
-{
-id: "INC-001",
-title: "Error al sincronizar ERP",
-priority: "Alta",
-status: "En progreso",
-},
-{
-id: "INC-002",
-title: "Nuevo usuario para RRHH",
-priority: "Media",
-status: "Pendiente",
-},
-{
-id: "INC-003",
-title: "Consulta sobre facturación",
-priority: "Baja",
-status: "Abierta",
-},
-];
-export default function CompanyTicketsPage() {
-const [tickets, setTickets] = useState(initialTickets);
-const createTicket = () => {
-  const newTicket = {
-    id: `INC-00${tickets.length + 1}`,
-    title: "Nueva solicitud",
-    priority: "Media",
-    status: "Abierta",
-  };
-  setTickets([newTicket, ...tickets]);
-};
+
+import {
+  priorityMap,
+  statusMap,
+} from "@/app/lib/ticket-metadata";
+
+import {
+fetchCompanyTickets,
+} from "@/app/lib/data";
+import { LogoutButton } from "../ui/logout-button";
+
+
+export default async function CompanyTicketsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ success?: string }> | { success?: string };
+}) {
+const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+const tickets = await fetchCompanyTickets();
+const ticketCreated = resolvedSearchParams.success === "true";
+
 return (
 <main className="min-h-screen bg-zinc-950 text-white">
 {/* Background */}
-<div className="fixed inset-0 -z-10">
-<div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[140px]" />
-<div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[140px]" />
+<div className="absolute inset-0 overflow-hidden">
+  <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[140px]" />
+    <div className="absolute left-0 top-1/3 h-[400px] w-[400px] rounded-full bg-cyan-500/10 blur-[120px]" />
+
+    <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[150px]" />
+
+    <div
+      className="absolute inset-0 opacity-[0.03]"
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, white 1px, transparent 1px),
+          linear-gradient(to bottom, white 1px, transparent 1px)
+        `,
+        backgroundSize: "48px 48px",
+      }}
+    />
 </div>
-  <div className="mx-auto max-w-7xl px-6 py-10">
+  <div className="relative z-10 mx-auto max-w-7xl px-6 py-10">
     {/* Header */}
+    {ticketCreated && (
+      <div className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+        Incidencia creada correctamente.
+      </div>
+    )}
+
     <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <h1 className="text-4xl font-bold">
@@ -59,7 +66,7 @@ return (
       </div>
 
       <Link
-        href="/tickets/new"
+        href="/tickets/create"
         className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 px-5 py-3 font-medium backdrop-blur-md transition hover:bg-white/20"
       >
         <Plus size={18} />
@@ -67,23 +74,14 @@ return (
       </Link>
     </div>
 
-    {/* Estadísticas */}
-    <div className="mb-8 grid gap-4 md:grid-cols-3">
-      <StatCard title="Abiertas" value="7" />
-      <StatCard title="En progreso" value="4" />
-      <StatCard title="Resueltas" value="18" />
-    </div>
-
     {/* Tabla */}
     <div className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md">
       <table className="w-full">
         <thead className="border-b border-white/10">
           <tr className="text-left text-zinc-400">
-            <th className="p-5">ID</th>
-            <th className="p-5">Título</th>
-            <th className="p-5">Prioridad</th>
-            <th className="p-5">Estado</th>
-            <th className="p-5">Acciones</th>
+            <th className="p-4">Título</th>
+            <th className="p-4">Prioridad</th>
+            <th className="p-4">Estado</th>
           </tr>
         </thead>
 
@@ -93,66 +91,47 @@ return (
               key={ticket.id}
               className="border-b border-white/5 hover:bg-white/5"
             >
-              <td className="p-5">{ticket.id}</td>
-
-              <td className="p-5 font-medium">
+              <td className="p-4 font-medium">
                 {ticket.title}
               </td>
 
-              <td className="p-5">
-                <PriorityBadge priority={ticket.priority} />
+              <td className="p-4">
+                <span
+                  className={`rounded-full border px-3 py-1 text-sm ${
+                    priorityMap[ticket.priority as keyof typeof priorityMap]?.className
+                  }`}
+                >
+                  {priorityMap[ticket.priority as keyof typeof priorityMap]?.label ?? ticket.priority}
+                </span>
+                </td>
+
+              <td className="p-4">
+                <StatusBadge status={statusMap[ticket.status as keyof typeof statusMap] ?? ticket.status} />
               </td>
 
-              <td className="p-5">
-                <StatusBadge status={ticket.status} />
-              </td>
-
-              <td className="p-5">
-                <button className="flex items-center gap-2 rounded-lg bg-blue-500/10 px-3 py-2 text-blue-300 transition hover:bg-blue-500/20">
-                  <MessageCircle size={16} />
-                  Ver chat
-                </button>
+              <td className="p-4">
+                <Link
+                  href={`/tickets/${ticket.id}/chat`}
+                  className="inline-flex items-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/10 px-5 py-3 text-blue-300 transition hover:bg-blue-500/20"
+                >
+                  <MessageCircle size={18} />
+                  Abrir chat
+                </Link>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+    <div className="flex items-center gap-4 mt-10">
+      <LogoutButton />
+    </div>
   </div>
 
 </main>
 );
 }
-function StatCard({
-title,
-value,
-}: {
-title: string;
-value: string;
-}) {
-return (
-<div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
-<p className="text-sm text-zinc-400">{title}</p>
-<h2 className="mt-2 text-3xl font-bold">{value}</h2>
-</div>
-);
-}
-function PriorityBadge({
-priority,
-}: {
-priority: string;
-}) {
-const colors = {
-Alta: "text-red-300 bg-red-500/10",
-Media: "text-yellow-300 bg-yellow-500/10",
-Baja: "text-green-300 bg-green-500/10",
-};
-return (
-<span className={`rounded-full px-3 py-1 text-sm ${colors[priority as keyof typeof colors]}`}>
-{priority}
-</span>
-);
-}
+
 function StatusBadge({
 status,
 }: {

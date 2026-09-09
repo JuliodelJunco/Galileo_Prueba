@@ -23,23 +23,45 @@ export const { auth, signIn, signOut } = NextAuth({
   providers: [
     Credentials({
       async authorize(credentials) {
-        const parsedCredentials = z
-          .object({ email: z.string().email(), password: z.string().min(6) })
-          .safeParse(credentials);
+  const parsedCredentials = z
+    .object({
+      email: z.string().email(),
+      password: z.string().min(6),
+    })
+    .safeParse(credentials);
 
-        if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
+  console.log("PARSED:", parsedCredentials);
 
-          const user = await getUser(email);
-          if (!user) return null;
+  if (parsedCredentials.success) {
+    const { email, password } = parsedCredentials.data;
 
-          const passwordsMatch = await bcrypt.compare(password, user.password);
-          if (passwordsMatch) return user;
-        }
+    console.log("EMAIL:", email);
 
-        console.log('Invalid credentials');
-        return null;
-      },
+    const user = await getUser(email);
+
+    console.log("USER:", user);
+
+    if (!user) {
+      console.log("USER NOT FOUND");
+      return null;
+    }
+
+    const passwordsMatch = await bcrypt.compare(
+      password,
+      user.password
+    );
+
+    console.log("PASSWORD MATCH:", passwordsMatch);
+
+    if (passwordsMatch) {
+      console.log("LOGIN OK");
+      return user;
+    }
+  }
+
+  console.log("Invalid credentials");
+  return null;
+}
     }),
   ],
 });
