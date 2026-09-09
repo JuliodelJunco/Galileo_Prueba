@@ -1,4 +1,4 @@
-import { postgres } from "postgres";
+import postgres from "postgres";
 import bcrypt from 'bcrypt';
 import {
 companies,
