@@ -155,4 +155,4 @@ pnpm start
 
 ¿Cómo organizarías el trabajo para continuar a partir de aquí?
 
-Lo más importante sería terminar las funcionalidades de las incidencias, luego la seguridad, después el historial y por último funciones de accesibilidad como el idioma, el modo claro o la guía para ciegos, a parte de posibles peticiones por parte del cliente.
+- Lo más importante sería terminar las funcionalidades de las incidencias, luego la seguridad, después el historial y por último funciones de accesibilidad como el idioma, el modo claro o la guía para ciegos, a parte de posibles peticiones por parte del cliente.
